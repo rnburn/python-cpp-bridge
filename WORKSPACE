@@ -47,7 +47,7 @@ http_archive(
         "https://github.com/pybind/pybind11/archive/v2.2.4.tar.gz",
     ],
     sha256 = "b69e83658513215b8d1443544d0549b7d231b9f201f6fc787a2b2218b408181e",
-    build_file = "//build:pybind11.BUILD",
+    build_file = "//bazel:pybind11.BUILD",
 )
 
 

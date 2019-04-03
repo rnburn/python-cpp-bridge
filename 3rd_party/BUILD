@@ -7,8 +7,12 @@ configure_make(
         "CFLAGS='-Dredacted=\"redacted\"'"
     ],
     lib_source = "@com_github_python_cpython//:all",
+    out_include_dir = "include/python2.7",
     binaries = [
         "python",
+    ],
+    visibility = [
+        "//visibility:public",
     ],
 )
 

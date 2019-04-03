@@ -1,3 +1,3 @@
-import sys
+import example
 
-print "hellohello: ", sys.executable
+print example.add(3, 4)
