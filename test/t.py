@@ -1,3 +1,3 @@
-import example
+import bridge_tracer
 
-print example.add(3, 4)
+print(bridge_tracer.Tracer)

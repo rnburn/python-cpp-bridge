@@ -12,7 +12,7 @@ sh_test(
     ],
     data = [
         "//3rd_party:cpython_files",
-        "//:example.so",
+        "//:bridge_tracer.so",
         "t.py",
     ],
 )

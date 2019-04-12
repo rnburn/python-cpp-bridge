@@ -1,4 +1,4 @@
-workspace(name = "apache_bazel_example")
+workspace(name = "opentracing_python_cpp_bridge")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
@@ -26,11 +26,20 @@ rules_foreign_cc_dependencies([
 ])
 
 http_archive(
+    name = "com_github_openssl_openssl",
+    build_file_content = all_content,
+    strip_prefix = "openssl-OpenSSL_1_1_1",
+    urls = [
+        "https://github.com/openssl/openssl/archive/OpenSSL_1_1_1.tar.gz",
+    ],
+)
+
+http_archive(
     name = "com_github_python_cpython",
     build_file_content = all_content,
-    strip_prefix = "cpython-2.7.16",
+    strip_prefix = "cpython-3.7.3",
     urls = [
-        "https://github.com/python/cpython/archive/v2.7.16.tar.gz",
+        "https://github.com/python/cpython/archive/v3.7.3.tar.gz",
     ],
 )
 
