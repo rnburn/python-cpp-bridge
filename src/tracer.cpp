@@ -2,6 +2,11 @@
 
 #include <iostream>
 
+#include "tracer_bridge.h"
+#include "utility.h"
+
+static PyObject* TracerType;
+
 namespace python_bridge_tracer {
 //--------------------------------------------------------------------------------------------------
 // TracerObject
@@ -9,6 +14,7 @@ namespace python_bridge_tracer {
 namespace {
 struct TracerObject {
   PyObject_HEAD
+  TracerBridge* tracer_bridge;
 };
 } // namespace
 
@@ -16,6 +22,7 @@ struct TracerObject {
 // deallocTracer
 //--------------------------------------------------------------------------------------------------
 static void deallocTracer(TracerObject* self) noexcept {
+  delete self->tracer_bridge;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -34,19 +41,6 @@ static PyMethodDef TracerMethods[] = {
     {nullptr, nullptr}};
 
 //--------------------------------------------------------------------------------------------------
-// toVoidPtr
-//--------------------------------------------------------------------------------------------------
-template <class T>
-static void* toVoidPtr(T* t) noexcept {
-  return reinterpret_cast<void*>(t);
-}
-
-template <class T>
-static void* toVoidPtr(const T* t) noexcept {
-  return toVoidPtr(const_cast<T*>(t));
-}
-
-//--------------------------------------------------------------------------------------------------
 // TracerTypeSlots
 //--------------------------------------------------------------------------------------------------
 static PyType_Slot TracerTypeSlots[] = {
@@ -60,19 +54,39 @@ static PyType_Slot TracerTypeSlots[] = {
 //--------------------------------------------------------------------------------------------------
 static PyType_Spec TracerTypeSpec = {
     "bridge_tracer.Tracer", sizeof(TracerObject), 0,
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_HAVE_FINALIZE,
+    Py_TPFLAGS_DEFAULT,
     TracerTypeSlots};
+
+//--------------------------------------------------------------------------------------------------
+// loadTracer
+//--------------------------------------------------------------------------------------------------
+PyObject* loadTracer(PyObject* self, PyObject* args, PyObject* keywords) noexcept {
+  static char* keyword_names[] = {const_cast<char*>("library"),
+                                  const_cast<char*>("config"),
+                                  const_cast<char*>("scope_manager"), nullptr};
+  char* library;
+  char* config;
+  PyObject* scope_manager = nullptr;
+  if (!PyArg_ParseTupleAndKeywords(args, keywords, "ss|O:loadTracer", keyword_names, 
+        &library, &config, &scope_manager)) {
+    return nullptr;
+  }
+  (void)self;
+  (void)args;
+  Py_RETURN_NONE;
+}
 
 //--------------------------------------------------------------------------------------------------
 // setupTracerClass
 //--------------------------------------------------------------------------------------------------
 void setupTracerClass(PyObject* module) noexcept {
-  auto tracer = PyType_FromSpec(&TracerTypeSpec);
-  if (tracer == nullptr) {
+  auto tracer_type = PyType_FromSpec(&TracerTypeSpec);
+  if (tracer_type == nullptr) {
     // TODO: Fail?
     return;
   }
-  auto rcode = PyModule_AddObject(module, "Tracer", tracer);
+  TracerType = tracer_type;
+  auto rcode = PyModule_AddObject(module, "Tracer", tracer_type);
   (void)rcode;
 }
 } // namespace python_bridge_tracer

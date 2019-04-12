@@ -25,6 +25,12 @@ load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependen
 rules_foreign_cc_dependencies([
 ])
 
+git_repository(
+    name = "io_opentracing_cpp",
+    remote = "https://github.com/opentracing/opentracing-cpp",
+    commit = "ac50154a7713877f877981c33c3375003b6ebfe1",
+)
+
 http_archive(
     name = "com_github_openssl_openssl",
     build_file_content = all_content,

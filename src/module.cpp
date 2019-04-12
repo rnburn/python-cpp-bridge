@@ -7,8 +7,9 @@ namespace python_bridge_tracer {
 // ModuleMethods
 //--------------------------------------------------------------------------------------------------
 static PyMethodDef ModuleMethods[] = {
-  {nullptr, nullptr}
-};
+    {"loadTracer", reinterpret_cast<PyCFunction>(loadTracer),
+     METH_VARARGS | METH_KEYWORDS, PyDoc_STR("loads a C++ opentracing plugin")},
+    {nullptr, nullptr}};
 
 //--------------------------------------------------------------------------------------------------
 // ModuleDefinition
