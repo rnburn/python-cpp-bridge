@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "dynamic_tracer.h"
 #include "tracer_bridge.h"
 #include "utility.h"
 
@@ -60,7 +61,7 @@ static PyType_Spec TracerTypeSpec = {
 //--------------------------------------------------------------------------------------------------
 // loadTracer
 //--------------------------------------------------------------------------------------------------
-PyObject* loadTracer(PyObject* self, PyObject* args, PyObject* keywords) noexcept {
+PyObject* loadTracer(PyObject* /*self*/, PyObject* args, PyObject* keywords) noexcept try {
   static char* keyword_names[] = {const_cast<char*>("library"),
                                   const_cast<char*>("config"),
                                   const_cast<char*>("scope_manager"), nullptr};
@@ -71,8 +72,15 @@ PyObject* loadTracer(PyObject* self, PyObject* args, PyObject* keywords) noexcep
         &library, &config, &scope_manager)) {
     return nullptr;
   }
-  (void)self;
-  (void)args;
+  auto tracer = loadTracer(library, config);
+  auto result = PyObject_New(TracerObject, reinterpret_cast<PyTypeObject*>(TracerType));
+  if (result == nullptr) {
+    return nullptr;
+  }
+  result->tracer_bridge = new TracerBridge{std::move(tracer)};
+  return reinterpret_cast<PyObject*>(result);
+} catch(const std::exception& /*e*/) {
+  // TODO: make exception
   Py_RETURN_NONE;
 }
 
