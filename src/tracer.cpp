@@ -29,7 +29,7 @@ static void deallocTracer(TracerObject* self) noexcept {
 //--------------------------------------------------------------------------------------------------
 // startSpan
 //--------------------------------------------------------------------------------------------------
-static PyObject* startSpan(TracerObject* self, PyObject* args) noexcept {
+static PyObject* startSpan(TracerObject* self, PyObject* args, PyObject* keywords) noexcept {
   Py_RETURN_NONE;
 }
 
@@ -37,7 +37,7 @@ static PyObject* startSpan(TracerObject* self, PyObject* args) noexcept {
 // TracerMethods
 //--------------------------------------------------------------------------------------------------
 static PyMethodDef TracerMethods[] = {
-    {"startSpan", reinterpret_cast<PyCFunction>(startSpan), METH_VARARGS,
+    {"startSpan", reinterpret_cast<PyCFunction>(startSpan), METH_VARARGS | METH_KEYWORDS,
      PyDoc_STR("opentracing-compliant tracer")},
     {nullptr, nullptr}};
 
