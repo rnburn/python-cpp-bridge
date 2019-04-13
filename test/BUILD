@@ -1,10 +1,3 @@
-# py_test(
-#     name = "t",
-#     srcs = [
-#         "t.py",
-#     ],
-# )
-
 sh_test(
     name = "example_test",
     srcs = [
@@ -13,6 +6,8 @@ sh_test(
     data = [
         "//3rd_party:cpython_files",
         "//:bridge_tracer.so",
+        "@io_opentracing_cpp//mocktracer:libmocktracer_plugin.so",
         "t.py",
+        "mocktracer-config.json",
     ],
 )
