@@ -6,6 +6,8 @@ namespace python_bridge_tracer {
 class TracerBridge {
  public:
    explicit TracerBridge(std::shared_ptr<opentracing::Tracer> tracer) noexcept;
+
+   opentracing::Tracer& tracer() noexcept { return *tracer_; }
  private:
    std::shared_ptr<opentracing::Tracer> tracer_;
 };

@@ -1,6 +1,7 @@
 #include <Python.h>
 
 #include "tracer.h"
+#include "span.h"
 
 namespace python_bridge_tracer {
 //--------------------------------------------------------------------------------------------------
@@ -29,8 +30,7 @@ PyMODINIT_FUNC PyInit_bridge_tracer() noexcept {
     return nullptr;
   }
   setupTracerClass(module);
-  /* auto module_dict = PyModule_GetDict(module); */
-  /* setupTracerClass(module_dict); */
+  setupSpanClass(module);
   return module;
 }
 } // extern "C"

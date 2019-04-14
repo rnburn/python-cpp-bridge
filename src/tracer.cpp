@@ -4,6 +4,7 @@
 
 #include "dynamic_tracer.h"
 #include "tracer_bridge.h"
+#include "span.h"
 #include "utility.h"
 
 static PyObject* TracerType;
@@ -30,6 +31,46 @@ static void deallocTracer(TracerObject* self) noexcept {
 // startSpan
 //--------------------------------------------------------------------------------------------------
 static PyObject* startSpan(TracerObject* self, PyObject* args, PyObject* keywords) noexcept {
+  static char* keyword_names[] = {const_cast<char*>("operation_name"),
+                                  const_cast<char*>("child_of"),
+                                  const_cast<char*>("references"),
+                                  const_cast<char*>("tags"),
+                                  const_cast<char*>("start_time"),
+                                  const_cast<char*>("ignore_active_span"), nullptr};
+  const char* operation_name = nullptr;
+  int operation_name_length = 0;
+  PyObject* parent = nullptr;
+  PyObject* references = nullptr;
+  PyObject* tags = nullptr;
+  double start_time = 0;
+  int ignore_active_span = 0;
+  static const char* const arguments_format =
+      "s#"  // operation_name
+      "|"
+      "O"  // parent
+      "O"  // references
+      "O"  // tags
+      "d"  // start_time
+      "p"  // ignore_active_span
+      ":startSpan";
+  if (!PyArg_ParseTupleAndKeywords(args, keywords, arguments_format,
+                                   keyword_names, &operation_name,
+                                   &operation_name_length, &parent, &references,
+                                   &tags, &start_time, &ignore_active_span)) {
+    return nullptr;
+  }
+  return makeSpan(
+      self->tracer_bridge->tracer(),
+      opentracing::string_view{operation_name,
+                               static_cast<size_t>(operation_name_length)},
+      parent, references, tags, start_time);
+}
+
+//--------------------------------------------------------------------------------------------------
+// close
+//--------------------------------------------------------------------------------------------------
+static PyObject* close(TracerObject* self) {
+  self->tracer_bridge->tracer().Close();
   Py_RETURN_NONE;
 }
 
@@ -37,8 +78,10 @@ static PyObject* startSpan(TracerObject* self, PyObject* args, PyObject* keyword
 // TracerMethods
 //--------------------------------------------------------------------------------------------------
 static PyMethodDef TracerMethods[] = {
-    {"startSpan", reinterpret_cast<PyCFunction>(startSpan), METH_VARARGS | METH_KEYWORDS,
-     PyDoc_STR("opentracing-compliant tracer")},
+    {"start_span", reinterpret_cast<PyCFunction>(startSpan),
+     METH_VARARGS | METH_KEYWORDS, PyDoc_STR("start a span")},
+    {"close", reinterpret_cast<PyCFunction>(close), METH_VARARGS,
+     PyDoc_STR("close tracer")},
     {nullptr, nullptr}};
 
 //--------------------------------------------------------------------------------------------------
@@ -79,7 +122,8 @@ PyObject* loadTracer(PyObject* /*self*/, PyObject* args, PyObject* keywords) noe
   }
   result->tracer_bridge = new TracerBridge{std::move(tracer)};
   return reinterpret_cast<PyObject*>(result);
-} catch(const std::exception& /*e*/) {
+} catch(const std::exception& e) {
+  std::cerr << "failed to load tracer: " << e.what() << "\n";
   // TODO: make exception
   Py_RETURN_NONE;
 }
