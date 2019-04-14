@@ -8,5 +8,6 @@ tracer = bridge_tracer.loadTracer(
 print(tracer)
 span = tracer.start_span("abc")
 print(span)
+span.set_tag('abc', '123')
 span.finish()
 tracer.close()

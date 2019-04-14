@@ -29,6 +29,27 @@ static void deallocSpan(SpanObject* self) noexcept {
 }
 
 //--------------------------------------------------------------------------------------------------
+// setStringTag
+//--------------------------------------------------------------------------------------------------
+static PyObject* setStringTag(opentracing::Span& span, opentracing::string_view key,
+    PyObject* value) noexcept {
+  auto utf8 = PyUnicode_AsUTF8String(value);
+  if (utf8 == nullptr) {
+    return nullptr;
+  }
+  auto on_scope_exit = finally([utf8] {
+      Py_XDECREF(utf8);
+  });
+  char* s;
+  auto rcode = PyBytes_AsStringAndSize(utf8, &s, nullptr);
+  if (rcode == -1) {
+    return nullptr;
+  }
+  span.SetTag(key, s);
+  Py_RETURN_NONE;
+}
+
+//--------------------------------------------------------------------------------------------------
 // setTag
 //--------------------------------------------------------------------------------------------------
 static PyObject* setTag(SpanObject* self, PyObject* args, PyObject* keywords) noexcept {
@@ -44,12 +65,9 @@ static PyObject* setTag(SpanObject* self, PyObject* args, PyObject* keywords) no
   }
   opentracing::Value cpp_value;
   if (PyUnicode_Check(value) == 1) {
-    char* s;
-    auto rcode = PyBytes_AsStringAndSize(value, &s, nullptr);
-    if (rcode == -1) {
-      return nullptr;
-    }
-    cpp_value = s;
+    return setStringTag(
+        self->span_bridge->span(),
+        opentracing::string_view{key, static_cast<size_t>(key_length)}, value);
   } else if (PyBool_Check(value) == 1) {
     cpp_value = static_cast<bool>(PyObject_IsTrue(value));
   } else if (PyLong_Check(value) == 1) {
