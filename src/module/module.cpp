@@ -1,14 +1,38 @@
+#include <iostream>
+
 #include <Python.h>
 
-#include "tracer.h"
-#include "span.h"
+#include "python_bridge_tracer/module.h"
+
+#include "dynamic_tracer.h"
 
 namespace python_bridge_tracer {
+//--------------------------------------------------------------------------------------------------
+// loadTracer
+//--------------------------------------------------------------------------------------------------
+static PyObject* loadTracer(PyObject* /*self*/, PyObject* args, PyObject* keywords) noexcept try {
+  static char* keyword_names[] = {const_cast<char*>("library"),
+                                  const_cast<char*>("config"),
+                                  const_cast<char*>("scope_manager"), nullptr};
+  char* library;
+  char* config;
+  PyObject* scope_manager = nullptr;
+  if (!PyArg_ParseTupleAndKeywords(args, keywords, "ss|O:load_tracer", keyword_names, 
+        &library, &config, &scope_manager)) {
+    return nullptr;
+  }
+  return makeTracer(makeDynamicTracer(library, config));
+} catch(const std::exception& e) {
+  std::cerr << "failed to load tracer: " << e.what() << "\n";
+  // TODO: make exception
+  Py_RETURN_NONE;
+}
+
 //--------------------------------------------------------------------------------------------------
 // ModuleMethods
 //--------------------------------------------------------------------------------------------------
 static PyMethodDef ModuleMethods[] = {
-    {"loadTracer", reinterpret_cast<PyCFunction>(loadTracer),
+    {"load_tracer", reinterpret_cast<PyCFunction>(loadTracer),
      METH_VARARGS | METH_KEYWORDS, PyDoc_STR("loads a C++ opentracing plugin")},
     {nullptr, nullptr}};
 
@@ -29,8 +53,9 @@ PyMODINIT_FUNC PyInit_bridge_tracer() noexcept {
   if (module == nullptr) {
     return nullptr;
   }
-  setupTracerClass(module);
-  setupSpanClass(module);
+  if (!setupClasses(module)) {
+    return nullptr;
+  }
   return module;
 }
 } // extern "C"

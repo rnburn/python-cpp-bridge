@@ -1,23 +1,16 @@
+load(
+    "//bazel:python_bridge_build_system.bzl",
+    "python_bridge_cc_binary",
+    "python_bridge_package",
+)
+
+python_bridge_package()
+
 cc_binary(
     name = "bridge_tracer.so",
-    copts = [
-        "-fPIC",
-        "-DPy_LIMITED_API",
-    ],
-    linkopts = [
-        "-shared",
-        "-Wl,--unresolved-symbols=ignore-in-object-files",
-    ],
-    srcs = glob([
-        # "src/tracer.h",
-        # "src/tracer.cpp",
-        # "src/module.cpp",
-        "src/**/*.cpp", 
-        "src/**/*.h"
-    ]),
+    linkshared = True,
     deps = [
-      "//3rd_party:cpython",
-      "@io_opentracing_cpp//:opentracing",
+      "//src/module:bridge_tracer_module_lib",
     ],
     visibility = [
         "//visibility:public",

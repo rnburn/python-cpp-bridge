@@ -22,10 +22,7 @@ struct SpanObject {
 // deallocSpan
 //--------------------------------------------------------------------------------------------------
 static void deallocSpan(SpanObject* self) noexcept {
-  std::cerr << "yip" << std::endl;
-  std::cerr << "span_bridge = " << self->span_bridge << std::endl;
   delete self->span_bridge;
-  std::cerr << "nuf" << std::endl;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -96,6 +93,8 @@ static PyObject* setTag(SpanObject* self, PyObject* args, PyObject* keywords) no
 // finish
 //--------------------------------------------------------------------------------------------------
 static PyObject* finish(SpanObject* self, PyObject* args, PyObject* keywords) noexcept {
+  (void)args;
+  (void)keywords;
   self->span_bridge->span().Finish();
   Py_RETURN_NONE;
 }
@@ -134,6 +133,10 @@ PyObject* makeSpan(opentracing::Tracer& tracer,
                    opentracing::string_view operation_name, PyObject* parent,
                    PyObject* references, PyObject* tags,
                    double start_time) noexcept try {
+  (void)parent;
+  (void)references;
+  (void)tags;
+  (void)start_time;
   auto span = tracer.StartSpan(operation_name);
   auto result = PyObject_New(SpanObject, reinterpret_cast<PyTypeObject*>(SpanType));
   if (result == nullptr) {

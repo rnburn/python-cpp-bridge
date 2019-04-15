@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-#include "dynamic_tracer.h"
+#include "python_bridge_tracer/module.h"
+
 #include "tracer_bridge.h"
 #include "span.h"
 #include "utility.h"
@@ -102,29 +103,17 @@ static PyType_Spec TracerTypeSpec = {
     TracerTypeSlots};
 
 //--------------------------------------------------------------------------------------------------
-// loadTracer
+// makeTracer
 //--------------------------------------------------------------------------------------------------
-PyObject* loadTracer(PyObject* /*self*/, PyObject* args, PyObject* keywords) noexcept try {
-  static char* keyword_names[] = {const_cast<char*>("library"),
-                                  const_cast<char*>("config"),
-                                  const_cast<char*>("scope_manager"), nullptr};
-  char* library;
-  char* config;
-  PyObject* scope_manager = nullptr;
-  if (!PyArg_ParseTupleAndKeywords(args, keywords, "ss|O:loadTracer", keyword_names, 
-        &library, &config, &scope_manager)) {
-    return nullptr;
-  }
-  auto tracer = loadTracer(library, config);
+PyObject* makeTracer(std::shared_ptr<opentracing::Tracer> tracer) noexcept try {
   auto result = PyObject_New(TracerObject, reinterpret_cast<PyTypeObject*>(TracerType));
   if (result == nullptr) {
     return nullptr;
   }
   result->tracer_bridge = new TracerBridge{std::move(tracer)};
   return reinterpret_cast<PyObject*>(result);
-} catch(const std::exception& e) {
-  std::cerr << "failed to load tracer: " << e.what() << "\n";
-  // TODO: make exception
+} catch (const std::exception& e) {
+  // TODO: error out
   Py_RETURN_NONE;
 }
 
