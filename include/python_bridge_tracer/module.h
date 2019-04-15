@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef PYTHON_BRIDGE_TRACER_MODULE
+#define PYTHON_BRIDGE_TRACER_MODULE "bridge_tracer"
+#endif
+
 #include <Python.h>
 #include <opentracing/tracer.h>
 

@@ -97,10 +97,9 @@ static PyType_Slot TracerTypeSlots[] = {
 //--------------------------------------------------------------------------------------------------
 // TracerTypeSpec
 //--------------------------------------------------------------------------------------------------
-static PyType_Spec TracerTypeSpec = {
-    "bridge_tracer.Tracer", sizeof(TracerObject), 0,
-    Py_TPFLAGS_DEFAULT,
-    TracerTypeSlots};
+static PyType_Spec TracerTypeSpec = {PYTHON_BRIDGE_TRACER_MODULE ".Tracer",
+                                     sizeof(TracerObject), 0,
+                                     Py_TPFLAGS_DEFAULT, TracerTypeSlots};
 
 //--------------------------------------------------------------------------------------------------
 // makeTracer

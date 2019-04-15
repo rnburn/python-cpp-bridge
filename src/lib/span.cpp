@@ -1,5 +1,7 @@
 #include "span.h"
 
+#include "python_bridge_tracer/module.h"
+
 #include "span_bridge.h"
 #include "utility.h"
 
@@ -121,10 +123,9 @@ static PyType_Slot SpanTypeSlots[] = {
 //--------------------------------------------------------------------------------------------------
 // SpanTypeSpec
 //--------------------------------------------------------------------------------------------------
-static PyType_Spec SpanTypeSpec = {
-    "bridge_tracer.Span", sizeof(SpanObject), 0,
-    Py_TPFLAGS_DEFAULT,
-    SpanTypeSlots};
+static PyType_Spec SpanTypeSpec = {PYTHON_BRIDGE_TRACER_MODULE ".Span",
+                                   sizeof(SpanObject), 0, Py_TPFLAGS_DEFAULT,
+                                   SpanTypeSlots};
 
 //--------------------------------------------------------------------------------------------------
 // startSpan
