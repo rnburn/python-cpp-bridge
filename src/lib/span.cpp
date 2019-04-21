@@ -153,14 +153,16 @@ PyObject* makeSpan(opentracing::Tracer& tracer,
 //--------------------------------------------------------------------------------------------------
 // setupSpanClass
 //--------------------------------------------------------------------------------------------------
-void setupSpanClass(PyObject* module) noexcept {
+bool setupSpanClass(PyObject* module) noexcept {
   auto span_type = PyType_FromSpec(&SpanTypeSpec);
   if (span_type == nullptr) {
-    // TODO: Fail?
-    return;
+    return false;
   }
   SpanType = span_type;
   auto rcode = PyModule_AddObject(module, "Span", span_type);
-  (void)rcode;
+  if (rcode != 0) {
+    return false;
+  }
+  return true;
 }
 } // namespace python_bridge_tracer

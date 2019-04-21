@@ -6,5 +6,5 @@ namespace python_bridge_tracer {
 //--------------------------------------------------------------------------------------------------
 // setupTracerClass
 //--------------------------------------------------------------------------------------------------
-void setupTracerClass(PyObject* module) noexcept;
+bool setupTracerClass(PyObject* module) noexcept;
 } // namespace python_bridge_tracer

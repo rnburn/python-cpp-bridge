@@ -17,5 +17,5 @@ PyObject* makeSpan(opentracing::Tracer& tracer,
 //--------------------------------------------------------------------------------------------------
 // setupSpanClass
 //--------------------------------------------------------------------------------------------------
-void setupSpanClass(PyObject* module) noexcept;
+bool setupSpanClass(PyObject* module) noexcept;
 } // namespace python_bridge_tracer

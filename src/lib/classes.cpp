@@ -8,8 +8,9 @@ namespace python_bridge_tracer {
 // setupClasses
 //--------------------------------------------------------------------------------------------------
 bool setupClasses(PyObject* module) noexcept {
-  setupTracerClass(module);
-  setupSpanClass(module);
-  return true;
+  if(!setupTracerClass(module)) {
+    return false;
+  }
+  return setupSpanClass(module);
 }
 } // namespace python_bridge_tracer

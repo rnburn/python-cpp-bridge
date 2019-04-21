@@ -112,21 +112,23 @@ PyObject* makeTracer(std::shared_ptr<opentracing::Tracer> tracer) noexcept try {
   result->tracer_bridge = new TracerBridge{std::move(tracer)};
   return reinterpret_cast<PyObject*>(result);
 } catch (const std::exception& e) {
-  // TODO: error out
-  Py_RETURN_NONE;
+  PyErr_Format(PyExc_RuntimeError, e.what());
+  return nullptr;
 }
 
 //--------------------------------------------------------------------------------------------------
 // setupTracerClass
 //--------------------------------------------------------------------------------------------------
-void setupTracerClass(PyObject* module) noexcept {
+bool setupTracerClass(PyObject* module) noexcept {
   auto tracer_type = PyType_FromSpec(&TracerTypeSpec);
   if (tracer_type == nullptr) {
-    // TODO: Fail?
-    return;
+    return false;
   }
   TracerType = tracer_type;
   auto rcode = PyModule_AddObject(module, "Tracer", tracer_type);
-  (void)rcode;
+  if (rcode != 0) {
+    return false;
+  }
+  return true;
 }
 } // namespace python_bridge_tracer
