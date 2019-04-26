@@ -1,6 +1,7 @@
 #include "tracer.h"
 
 #include <iostream>
+#include <memory>
 
 #include "python_bridge_tracer/module.h"
 
@@ -105,11 +106,12 @@ static PyType_Spec TracerTypeSpec = {PYTHON_BRIDGE_TRACER_MODULE ".Tracer",
 // makeTracer
 //--------------------------------------------------------------------------------------------------
 PyObject* makeTracer(std::shared_ptr<opentracing::Tracer> tracer) noexcept try {
+  std::unique_ptr<TracerBridge> tracer_bridge{new TracerBridge{std::move(tracer)}};
   auto result = PyObject_New(TracerObject, reinterpret_cast<PyTypeObject*>(TracerType));
   if (result == nullptr) {
     return nullptr;
   }
-  result->tracer_bridge = new TracerBridge{std::move(tracer)};
+  result->tracer_bridge = tracer_bridge.release();
   return reinterpret_cast<PyObject*>(result);
 } catch (const std::exception& e) {
   PyErr_Format(PyExc_RuntimeError, e.what());
