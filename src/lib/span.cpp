@@ -102,6 +102,39 @@ static PyObject* finish(SpanObject* self, PyObject* args, PyObject* keywords) no
 }
 
 //--------------------------------------------------------------------------------------------------
+// enterContext
+//--------------------------------------------------------------------------------------------------
+static PyObject* enterContext(PyObject* self, PyObject* /*args*/) noexcept {
+  Py_INCREF(self);
+  return self;
+}
+
+//--------------------------------------------------------------------------------------------------
+// exitContext
+//--------------------------------------------------------------------------------------------------
+static PyObject* exitContext(SpanObject* self, PyObject* args) noexcept {
+  (void)args;
+  self->span_bridge->span().Finish();
+  Py_RETURN_NONE;
+}
+
+//--------------------------------------------------------------------------------------------------
+// getContext
+//--------------------------------------------------------------------------------------------------
+static PyObject* getContext(SpanObject* self, PyObject* /*ignored*/) noexcept {
+  (void)self;
+  return nullptr;
+}
+
+//--------------------------------------------------------------------------------------------------
+// getTracer
+//--------------------------------------------------------------------------------------------------
+static PyObject* getTracer(SpanObject* self, PyObject* /*ignored*/) noexcept {
+  (void)self;
+  return nullptr;
+}
+
+//--------------------------------------------------------------------------------------------------
 // SpanMethods
 //--------------------------------------------------------------------------------------------------
 static PyMethodDef SpanMethods[] = {
@@ -109,7 +142,19 @@ static PyMethodDef SpanMethods[] = {
      METH_VARARGS | METH_KEYWORDS, PyDoc_STR("Set a tag")},
     {"finish", reinterpret_cast<PyCFunction>(finish),
      METH_VARARGS | METH_KEYWORDS, PyDoc_STR("finish the span")},
+    {"__enter__", reinterpret_cast<PyCFunction>(enterContext), METH_NOARGS, nullptr},
+    {"__exit__", reinterpret_cast<PyCFunction>(exitContext), METH_VARARGS, nullptr},
     {nullptr, nullptr}};
+
+//--------------------------------------------------------------------------------------------------
+// SpanGetSetList
+//--------------------------------------------------------------------------------------------------
+static PyGetSetDef SpanGetSetList[] = {
+    {"context", reinterpret_cast<getter>(getContext), nullptr,
+     PyDoc_STR("Returns the span's context")},
+    {"tracer", reinterpret_cast<getter>(getTracer), nullptr,
+     PyDoc_STR("Returns the tracer used to create the span")},
+    {nullptr}};
 
 //--------------------------------------------------------------------------------------------------
 // SpanTypeSlots
@@ -118,6 +163,7 @@ static PyType_Slot SpanTypeSlots[] = {
     {Py_tp_doc, toVoidPtr("CppBridgeSpan")},
     {Py_tp_dealloc, toVoidPtr(deallocSpan)},
     {Py_tp_methods, toVoidPtr(SpanMethods)},
+    {Py_tp_getset, toVoidPtr(SpanGetSetList)},
     {0, nullptr}};
 
 //--------------------------------------------------------------------------------------------------

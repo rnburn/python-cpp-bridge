@@ -142,7 +142,7 @@ static PyObject* startSpan(TracerObject* self, PyObject* args, PyObject* keyword
 //--------------------------------------------------------------------------------------------------
 // close
 //--------------------------------------------------------------------------------------------------
-static PyObject* close(TracerObject* self) {
+static PyObject* close(TracerObject* self) noexcept {
   self->tracer_bridge->tracer().Close();
   Py_RETURN_NONE;
 }
