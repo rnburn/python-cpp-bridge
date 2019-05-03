@@ -27,8 +27,14 @@ class TestTracer(unittest.TestCase):
 
     def test_start_active_span(self):
         tracer, traces_path = make_mock_tracer()
+        print(tracer.active_span)
         scope = tracer.start_active_span('abc')
         print(scope)
+        print(tracer.active_span)
+
+    def test_properties(self):
+        tracer, traces_path = make_mock_tracer()
+        print(tracer.scope_manager)
 
 if __name__ == '__main__':
     unittest.main()

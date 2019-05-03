@@ -148,6 +148,31 @@ static PyObject* close(TracerObject* self) {
 }
 
 //--------------------------------------------------------------------------------------------------
+// getScopeManager
+//--------------------------------------------------------------------------------------------------
+static PyObject* getScopeManager(TracerObject* self, void* /*ignored*/) noexcept {
+  Py_INCREF(self->scope_manager);
+  return self->scope_manager;
+}
+
+//--------------------------------------------------------------------------------------------------
+// getActiveSpan
+//--------------------------------------------------------------------------------------------------
+static PyObject* getActiveSpan(TracerObject* self, void* /*ignored*/) noexcept {
+  auto scope = PyObject_GetAttrString(self->scope_manager, "active");
+  if (scope == nullptr) {
+    return nullptr;
+  }
+  auto cleanup_scope = finally([scope] {
+      Py_DECREF(scope);
+  });
+  if (scope == Py_None) {
+    Py_RETURN_NONE;
+  }
+  return PyObject_GetAttrString(scope, "span");
+}
+
+//--------------------------------------------------------------------------------------------------
 // TracerMethods
 //--------------------------------------------------------------------------------------------------
 static PyMethodDef TracerMethods[] = {
@@ -160,12 +185,23 @@ static PyMethodDef TracerMethods[] = {
     {nullptr, nullptr}};
 
 //--------------------------------------------------------------------------------------------------
+// TracerGetSetList
+//--------------------------------------------------------------------------------------------------
+static PyGetSetDef TracerGetSetList[] = {
+    {"scope_manager", reinterpret_cast<getter>(getScopeManager), nullptr,
+     PyDoc_STR("Returns the attached ScopeManager")},
+    {"active_span", reinterpret_cast<getter>(getActiveSpan), nullptr,
+     PyDoc_STR("Returns the active span")},
+    {nullptr}};
+
+//--------------------------------------------------------------------------------------------------
 // TracerTypeSlots
 //--------------------------------------------------------------------------------------------------
 static PyType_Slot TracerTypeSlots[] = {
     {Py_tp_doc, toVoidPtr("CppBridgeTracer")},
     {Py_tp_dealloc, toVoidPtr(deallocTracer)},
     {Py_tp_methods, toVoidPtr(TracerMethods)},
+    {Py_tp_getset, toVoidPtr(TracerGetSetList)},
     {0, nullptr}};
 
 //--------------------------------------------------------------------------------------------------
