@@ -21,4 +21,5 @@ apt-get install --no-install-recommends --no-install-suggests -y \
                 wget \
                 python \
                 zlib1g-dev \
-                libffi-dev
+                libffi-dev \
+                python3

@@ -1,4 +1,11 @@
+load(
+    "//bazel:python_bridge_build_system.bzl",
+    "python_bridge_package",
+)
+
 load("@rules_foreign_cc//tools/build_defs:configure.bzl", "configure_make")
+
+python_bridge_package()
 
 configure_make(
     name = "openssl",
@@ -41,4 +48,9 @@ filegroup(
     visibility = [
         "//visibility:public",
     ],
+)
+
+py_runtime(
+    name = "python-3.6.0",
+    interpreter_path = "/usr/bin/python3",
 )

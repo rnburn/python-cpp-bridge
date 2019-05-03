@@ -133,3 +133,27 @@ def python_bridge_cc_test(
         stamp = 1,
         deps = external_deps + deps,
     )
+
+def python_bridge_test(
+        name,
+        args = [],
+        srcs = [],
+        data = [],
+        testonly = 0,
+        visibility = None,
+        external_deps = [],
+        deps = []):
+  native.py_test(
+        name = name,
+        args = args,
+        srcs = srcs,
+        srcs_version = "PY3ONLY",
+        default_python_version = "PY3",
+        python_version = "PY3",
+        data = data,
+        testonly = testonly,
+        visibility = visibility,
+        stamp = 1,
+        deps = external_deps + deps,
+    )
+
