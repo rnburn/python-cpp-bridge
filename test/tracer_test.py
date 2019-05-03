@@ -25,5 +25,10 @@ class TestTracer(unittest.TestCase):
         self.assertEqual(len(spans), 1)
         self.assertEqual(spans[0]['operation_name'], 'abc')
 
+    def test_start_active_span(self):
+        tracer, traces_path = make_mock_tracer()
+        scope = tracer.start_active_span('abc')
+        print(scope)
+
 if __name__ == '__main__':
     unittest.main()

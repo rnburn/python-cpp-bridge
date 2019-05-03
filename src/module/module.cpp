@@ -21,7 +21,13 @@ static PyObject* loadTracer(PyObject* /*self*/, PyObject* args, PyObject* keywor
         &library, &config, &scope_manager)) {
     return nullptr;
   }
-  return makeTracer(makeDynamicTracer(library, config));
+  if (scope_manager == nullptr) {
+    scope_manager = getThreadLocalScopeManager();
+    if (scope_manager == nullptr) {
+      return nullptr;
+    }
+  }
+  return makeTracer(makeDynamicTracer(library, config), scope_manager);
 } catch(const std::exception& e) {
   std::cerr << "failed to load tracer: " << e.what() << "\n";
   // TODO: make exception
