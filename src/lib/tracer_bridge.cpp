@@ -218,8 +218,13 @@ std::unique_ptr<SpanBridge> TracerBridge::makeSpan(
     options.references.emplace_back(reference.first,
                                     &reference.second.span_context());
   }
+  if (start_time != 0) {
+    auto time_since_epoch = std::chrono::nanoseconds{static_cast<uint64_t>(1e9*start_time)};
+    options.start_system_timestamp = std::chrono::system_clock::time_point{
+        std::chrono::duration_cast<std::chrono::system_clock::duration>(
+            time_since_epoch)};
+  }
   (void)tags;
-  (void)start_time;
   auto span = tracer_->StartSpanWithOptions(operation_name, options);
   return std::unique_ptr<SpanBridge>{new SpanBridge{std::move(span)}};
 }
