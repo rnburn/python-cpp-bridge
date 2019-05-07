@@ -17,6 +17,7 @@ namespace {
 struct SpanObject {
   PyObject_HEAD
   SpanBridge* span_bridge;
+  PyObject* tracer;
 };
 } // namespace
 
@@ -25,80 +26,21 @@ struct SpanObject {
 //--------------------------------------------------------------------------------------------------
 static void deallocSpan(SpanObject* self) noexcept {
   delete self->span_bridge;
-}
-
-//--------------------------------------------------------------------------------------------------
-// setStringTag
-//--------------------------------------------------------------------------------------------------
-static PyObject* setStringTag(opentracing::Span& span, opentracing::string_view key,
-    PyObject* value) noexcept {
-  auto utf8 = PyUnicode_AsUTF8String(value);
-  if (utf8 == nullptr) {
-    return nullptr;
-  }
-  auto on_scope_exit = finally([utf8] {
-      Py_XDECREF(utf8);
-  });
-  char* s;
-  auto rcode = PyBytes_AsStringAndSize(utf8, &s, nullptr);
-  if (rcode == -1) {
-    return nullptr;
-  }
-  span.SetTag(key, s);
-  Py_RETURN_NONE;
+  Py_DECREF(self->tracer);
 }
 
 //--------------------------------------------------------------------------------------------------
 // setTag
 //--------------------------------------------------------------------------------------------------
 static PyObject* setTag(SpanObject* self, PyObject* args, PyObject* keywords) noexcept {
-  static char* keyword_names[] = {const_cast<char*>("key"),
-                                  const_cast<char*>("value"),
-                                  nullptr};
-  const char* key;
-  int key_length;
-  PyObject* value;
-  if (!PyArg_ParseTupleAndKeywords(args, keywords, "s#O:set_tag", keyword_names,
-                                   &key, &key_length, &value)) {
-    return nullptr;
-  }
-  opentracing::Value cpp_value;
-  if (PyUnicode_Check(value) == 1) {
-    return setStringTag(
-        self->span_bridge->span(),
-        opentracing::string_view{key, static_cast<size_t>(key_length)}, value);
-  } else if (PyBool_Check(value) == 1) {
-    cpp_value = static_cast<bool>(PyObject_IsTrue(value));
-  } else if (PyLong_Check(value) == 1) {
-    auto long_value = PyLong_AsLong(value);
-    if (long_value == -1 && PyErr_Occurred()) {
-      return nullptr;
-    }
-    cpp_value = long_value;
-  } else if (PyFloat_Check(value) == 1) {
-    auto double_value = PyFloat_AsDouble(value);
-    if (PyErr_Occurred()) {
-      return nullptr;
-    }
-    cpp_value = double_value;
-  } else {
-    // TODO: error
-    Py_RETURN_NONE;
-  }
-  self->span_bridge->span().SetTag(
-      opentracing::string_view{key, static_cast<size_t>(key_length)},
-      cpp_value);
-  Py_RETURN_NONE;
+  return self->span_bridge->setTag(args, keywords);
 }
 
 //--------------------------------------------------------------------------------------------------
 // finish
 //--------------------------------------------------------------------------------------------------
 static PyObject* finish(SpanObject* self, PyObject* args, PyObject* keywords) noexcept {
-  (void)args;
-  (void)keywords;
-  self->span_bridge->span().Finish();
-  Py_RETURN_NONE;
+  return self->span_bridge->finish(args, keywords);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -130,8 +72,8 @@ static PyObject* getContext(SpanObject* self, PyObject* /*ignored*/) noexcept {
 // getTracer
 //--------------------------------------------------------------------------------------------------
 static PyObject* getTracer(SpanObject* self, PyObject* /*ignored*/) noexcept {
-  (void)self;
-  return nullptr;
+  Py_INCREF(self->tracer);
+  return self->tracer;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -176,24 +118,15 @@ static PyType_Spec SpanTypeSpec = {PYTHON_BRIDGE_TRACER_MODULE ".Span",
 //--------------------------------------------------------------------------------------------------
 // startSpan
 //--------------------------------------------------------------------------------------------------
-PyObject* makeSpan(opentracing::Tracer& tracer,
-                   opentracing::string_view operation_name, PyObject* parent,
-                   PyObject* references, PyObject* tags,
-                   double start_time) noexcept try {
-  (void)parent;
-  (void)references;
-  (void)tags;
-  (void)start_time;
-  auto span = tracer.StartSpan(operation_name);
+PyObject* makeSpan(std::unique_ptr<SpanBridge>&& span_bridge, PyObject* tracer) noexcept {
   auto result = PyObject_New(SpanObject, reinterpret_cast<PyTypeObject*>(SpanType));
   if (result == nullptr) {
     return nullptr;
   }
-  result->span_bridge = new SpanBridge{std::shared_ptr<opentracing::Span>{span.release()}};
+  result->span_bridge = span_bridge.release();
+  Py_INCREF(tracer);
+  result->tracer = tracer;
   return reinterpret_cast<PyObject*>(result);
-} catch (const std::exception& e) {
-  // TODO: error out
-  Py_RETURN_NONE;
 }
 
 //--------------------------------------------------------------------------------------------------

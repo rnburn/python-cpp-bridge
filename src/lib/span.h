@@ -2,17 +2,16 @@
 
 #include <Python.h>
 
-#include <opentracing/span.h>
-#include <opentracing/tracer.h>
+#include "span_bridge.h"
+
+#include "opentracing/span.h"
+#include "opentracing/tracer.h"
 
 namespace python_bridge_tracer {
 //--------------------------------------------------------------------------------------------------
 // makeSpan
 //--------------------------------------------------------------------------------------------------
-PyObject* makeSpan(opentracing::Tracer& tracer,
-                    opentracing::string_view operation_name, PyObject* parent,
-                    PyObject* references, PyObject* tags,
-                    double start_time) noexcept;
+PyObject* makeSpan(std::unique_ptr<SpanBridge>&& span_bridge, PyObject* tracer) noexcept;
 
 //--------------------------------------------------------------------------------------------------
 // setupSpanClass
