@@ -1,5 +1,7 @@
 #include "span_context.h"
 
+#include <cassert>
+
 #include "python_bridge_tracer/module.h"
 
 #include "utility.h"
@@ -50,16 +52,18 @@ PyObject* makeSpanContext(std::shared_ptr<const opentracing::Span>& span) noexce
 }
 
 //--------------------------------------------------------------------------------------------------
+// isSpanContext
+//--------------------------------------------------------------------------------------------------
+bool isSpanContext(PyObject* object) noexcept {
+  return object->ob_type == reinterpret_cast<PyTypeObject*>(SpanContextType);
+}
+
+//--------------------------------------------------------------------------------------------------
 // getSpanContext
 //--------------------------------------------------------------------------------------------------
-const opentracing::SpanContext* getSpanContext(PyObject* object) noexcept {
-  if (object->ob_type != reinterpret_cast<PyTypeObject*>(SpanContextType)) {
-    PyErr_Format(PyExc_TypeError,
-                 "expected " PYTHON_BRIDGE_TRACER_MODULE "._SpanContext");
-    return nullptr;
-  }
-  return &reinterpret_cast<SpanContextObject*>(object)
-              ->span_context_bridge->span_context();
+SpanContextBridge getSpanContext(PyObject* object) noexcept {
+  assert(isSpanContext(object));
+  return *reinterpret_cast<SpanContextObject*>(object)->span_context_bridge;
 }
 
 //--------------------------------------------------------------------------------------------------

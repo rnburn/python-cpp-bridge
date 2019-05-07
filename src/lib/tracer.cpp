@@ -92,8 +92,10 @@ static PyObject* startActiveSpan(TracerObject* self, PyObject* args, PyObject* k
   auto span_bridge = self->tracer_bridge->makeSpan(
       opentracing::string_view{operation_name,
                                static_cast<size_t>(operation_name_length)},
-      parent, references, tags, start_time);
-  auto span = makeSpan(std::move(span_bridge), reinterpret_cast<PyObject*>(self));
+      self->scope_manager, parent, references, tags, start_time,
+      static_cast<bool>(ignore_active_span));
+  auto span =
+      makeSpan(std::move(span_bridge), reinterpret_cast<PyObject*>(self));
   if (span == nullptr) {
     return nullptr;
   }
@@ -136,7 +138,8 @@ static PyObject* startSpan(TracerObject* self, PyObject* args, PyObject* keyword
   auto span_bridge = self->tracer_bridge->makeSpan(
       opentracing::string_view{operation_name,
                                static_cast<size_t>(operation_name_length)},
-      parent, references, tags, start_time);
+      self->scope_manager, parent, references, tags, start_time,
+      static_cast<bool>(ignore_active_span));
   return makeSpan(std::move(span_bridge), reinterpret_cast<PyObject*>(self));
 }
 

@@ -13,7 +13,7 @@ static PyObject* setStringTag(opentracing::Span& span, opentracing::string_view 
     return nullptr;
   }
   auto cleanup_utf8 = finally([utf8] {
-      Py_XDECREF(utf8);
+      Py_DECREF(utf8);
   });
   char* s;
   auto rcode = PyBytes_AsStringAndSize(utf8, &s, nullptr);

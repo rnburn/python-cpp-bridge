@@ -16,6 +16,6 @@ class SpanContextBridge {
 
  private:
    std::shared_ptr<const opentracing::Span> span_;
-   std::unique_ptr<const opentracing::SpanContext> span_context_;
+   std::shared_ptr<const opentracing::SpanContext> span_context_;
 };
 } // namespace python_bridge_tracer

@@ -3,6 +3,7 @@ import tempfile
 import os
 import json
 import unittest
+import opentracing
 
 def make_mock_tracer(scope_manager = None):
     traces_path = os.path.join(tempfile.mkdtemp(prefix='python-bridge-test.'), 'traces.json')
@@ -24,6 +25,64 @@ class TestTracer(unittest.TestCase):
         spans = read_spans(traces_path)
         self.assertEqual(len(spans), 1)
         self.assertEqual(spans[0]['operation_name'], 'abc')
+
+    def test_start_span_with_reference1(self):
+        tracer, traces_path = make_mock_tracer()
+        spanA = tracer.start_span('A')
+        spanB = tracer.start_span('B', child_of=spanA)
+        spanB.finish()
+        spanA.finish()
+        tracer.close()
+        spans = read_spans(traces_path)
+        self.assertEqual(len(spans), 2)
+        traceIdA = spans[1]['span_context']['trace_id']
+        spanIdA = spans[1]['span_context']['span_id']
+        traceIdB = spans[0]['span_context']['trace_id']
+        self.assertEqual(traceIdA, traceIdB)
+        references = spans[0]['references']
+        self.assertEqual(len(references), 1)
+        self.assertEqual(references[0]['reference_type'], 'CHILD_OF')
+        self.assertEqual(references[0]['trace_id'], traceIdA)
+        self.assertEqual(references[0]['span_id'], spanIdA)
+
+    def test_start_span_with_reference2(self):
+        tracer, traces_path = make_mock_tracer()
+        spanA = tracer.start_span('A')
+        spanB = tracer.start_span('B', child_of=spanA.context)
+        spanB.finish()
+        spanA.finish()
+        tracer.close()
+        spans = read_spans(traces_path)
+        self.assertEqual(len(spans), 2)
+        traceIdA = spans[1]['span_context']['trace_id']
+        spanIdA = spans[1]['span_context']['span_id']
+        traceIdB = spans[0]['span_context']['trace_id']
+        self.assertEqual(traceIdA, traceIdB)
+        references = spans[0]['references']
+        self.assertEqual(len(references), 1)
+        self.assertEqual(references[0]['reference_type'], 'CHILD_OF')
+        self.assertEqual(references[0]['trace_id'], traceIdA)
+        self.assertEqual(references[0]['span_id'], spanIdA)
+
+    def test_start_span_with_reference3(self):
+        tracer, traces_path = make_mock_tracer()
+        spanA = tracer.start_span('A')
+        spanB = tracer.start_span('B', references=[
+            opentracing.Reference(opentracing.ReferenceType.CHILD_OF, spanA.context)])
+        spanB.finish()
+        spanA.finish()
+        tracer.close()
+        spans = read_spans(traces_path)
+        self.assertEqual(len(spans), 2)
+        traceIdA = spans[1]['span_context']['trace_id']
+        spanIdA = spans[1]['span_context']['span_id']
+        traceIdB = spans[0]['span_context']['trace_id']
+        self.assertEqual(traceIdA, traceIdB)
+        references = spans[0]['references']
+        self.assertEqual(len(references), 1)
+        self.assertEqual(references[0]['reference_type'], 'CHILD_OF')
+        self.assertEqual(references[0]['trace_id'], traceIdA)
+        self.assertEqual(references[0]['span_id'], spanIdA)
 
     def test_get_tracer_from_span(self):
         tracer, traces_path = make_mock_tracer()

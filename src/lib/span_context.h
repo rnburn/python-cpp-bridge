@@ -20,9 +20,14 @@ PyObject* makeSpanContext(std::unique_ptr<const opentracing::SpanContext>&& span
 PyObject* makeSpanContext(std::shared_ptr<const opentracing::Span>& span) noexcept;
 
 //--------------------------------------------------------------------------------------------------
+// isSpanContext
+//--------------------------------------------------------------------------------------------------
+bool isSpanContext(PyObject* object) noexcept;
+
+//--------------------------------------------------------------------------------------------------
 // getSpanContext
 //--------------------------------------------------------------------------------------------------
-const opentracing::SpanContext* getSpanContext(PyObject* object) noexcept;
+SpanContextBridge getSpanContext(PyObject* object) noexcept;
 
 //--------------------------------------------------------------------------------------------------
 // setupSpanContextClass

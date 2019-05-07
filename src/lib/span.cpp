@@ -129,6 +129,21 @@ PyObject* makeSpan(std::unique_ptr<SpanBridge>&& span_bridge, PyObject* tracer) 
 }
 
 //--------------------------------------------------------------------------------------------------
+// isSpan
+//--------------------------------------------------------------------------------------------------
+bool isSpan(PyObject* object) noexcept {
+  return object->ob_type == reinterpret_cast<PyTypeObject*>(SpanType);
+}
+
+//--------------------------------------------------------------------------------------------------
+// getSpanContext
+//--------------------------------------------------------------------------------------------------
+SpanContextBridge getSpanContextFromSpan(PyObject* object) noexcept {
+  assert(isSpan(object));
+  return SpanContextBridge{reinterpret_cast<SpanObject*>(object)->span_bridge->span()};
+}
+
+//--------------------------------------------------------------------------------------------------
 // setupSpanClass
 //--------------------------------------------------------------------------------------------------
 bool setupSpanClass(PyObject* module) noexcept {
