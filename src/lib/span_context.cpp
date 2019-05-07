@@ -2,7 +2,6 @@
 
 #include "python_bridge_tracer/module.h"
 
-#include "span_context_bridge.h"
 #include "utility.h"
 
 static PyObject* SpanContextType;
@@ -28,7 +27,7 @@ static void deallocSpanContext(SpanContextObject* self) noexcept {
 //--------------------------------------------------------------------------------------------------
 // makeSpanContext
 //--------------------------------------------------------------------------------------------------
-static PyObject* makeSpanContext(
+PyObject* makeSpanContext(
     std::unique_ptr<SpanContextBridge>&& span_context_bridge) noexcept {
   auto result = PyObject_New(SpanContextObject,
                              reinterpret_cast<PyTypeObject*>(SpanContextType));

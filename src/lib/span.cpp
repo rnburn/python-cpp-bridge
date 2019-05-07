@@ -3,6 +3,7 @@
 #include "python_bridge_tracer/module.h"
 
 #include "span_bridge.h"
+#include "span_context.h"
 #include "utility.h"
 
 #include <iostream>
@@ -55,17 +56,15 @@ static PyObject* enterContext(PyObject* self, PyObject* /*args*/) noexcept {
 // exitContext
 //--------------------------------------------------------------------------------------------------
 static PyObject* exitContext(SpanObject* self, PyObject* args) noexcept {
-  (void)args;
-  self->span_bridge->span().Finish();
-  Py_RETURN_NONE;
+  return self->span_bridge->exit(args);
 }
 
 //--------------------------------------------------------------------------------------------------
 // getContext
 //--------------------------------------------------------------------------------------------------
 static PyObject* getContext(SpanObject* self, PyObject* /*ignored*/) noexcept {
-  (void)self;
-  return nullptr;
+  return makeSpanContext(std::unique_ptr<SpanContextBridge>{
+      new SpanContextBridge{self->span_bridge->span()}});
 }
 
 //--------------------------------------------------------------------------------------------------
