@@ -111,7 +111,7 @@ static PyType_Slot SpanTypeSlots[] = {
 //--------------------------------------------------------------------------------------------------
 // SpanTypeSpec
 //--------------------------------------------------------------------------------------------------
-static PyType_Spec SpanTypeSpec = {PYTHON_BRIDGE_TRACER_MODULE ".Span",
+static PyType_Spec SpanTypeSpec = {PYTHON_BRIDGE_TRACER_MODULE "._Span",
                                    sizeof(SpanObject), 0, Py_TPFLAGS_DEFAULT,
                                    SpanTypeSlots};
 
@@ -138,7 +138,7 @@ bool setupSpanClass(PyObject* module) noexcept {
     return false;
   }
   SpanType = span_type;
-  auto rcode = PyModule_AddObject(module, "Span", span_type);
+  auto rcode = PyModule_AddObject(module, "_Span", span_type);
   if (rcode != 0) {
     return false;
   }

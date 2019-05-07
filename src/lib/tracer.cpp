@@ -208,7 +208,7 @@ static PyType_Slot TracerTypeSlots[] = {
 //--------------------------------------------------------------------------------------------------
 // TracerTypeSpec
 //--------------------------------------------------------------------------------------------------
-static PyType_Spec TracerTypeSpec = {PYTHON_BRIDGE_TRACER_MODULE ".Tracer",
+static PyType_Spec TracerTypeSpec = {PYTHON_BRIDGE_TRACER_MODULE "._Tracer",
                                      sizeof(TracerObject), 0,
                                      Py_TPFLAGS_DEFAULT, TracerTypeSlots};
 
@@ -241,7 +241,7 @@ bool setupTracerClass(PyObject* module) noexcept {
     return false;
   }
   TracerType = tracer_type;
-  auto rcode = PyModule_AddObject(module, "Tracer", tracer_type);
+  auto rcode = PyModule_AddObject(module, "_Tracer", tracer_type);
   if (rcode != 0) {
     return false;
   }
