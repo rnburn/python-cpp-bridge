@@ -84,6 +84,25 @@ class TestTracer(unittest.TestCase):
         self.assertEqual(references[0]['trace_id'], traceIdA)
         self.assertEqual(references[0]['span_id'], spanIdA)
 
+    def test_start_span_with_reference4(self):
+        tracer, traces_path = make_mock_tracer()
+        spanA = tracer.start_active_span('A').span
+        spanB = tracer.start_span('B')
+        spanB.finish()
+        spanA.finish()
+        tracer.close()
+        spans = read_spans(traces_path)
+        self.assertEqual(len(spans), 2)
+        traceIdA = spans[1]['span_context']['trace_id']
+        spanIdA = spans[1]['span_context']['span_id']
+        traceIdB = spans[0]['span_context']['trace_id']
+        self.assertEqual(traceIdA, traceIdB)
+        references = spans[0]['references']
+        self.assertEqual(len(references), 1)
+        self.assertEqual(references[0]['reference_type'], 'CHILD_OF')
+        self.assertEqual(references[0]['trace_id'], traceIdA)
+        self.assertEqual(references[0]['span_id'], spanIdA)
+
     def test_get_tracer_from_span(self):
         tracer, traces_path = make_mock_tracer()
         span1 = tracer.start_span('abc')
