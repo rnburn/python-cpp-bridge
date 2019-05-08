@@ -81,9 +81,25 @@ PyObject* SpanBridge::setTag(PyObject* args, PyObject* keywords) noexcept {
 // finish
 //--------------------------------------------------------------------------------------------------
 PyObject* SpanBridge::finish(PyObject* args, PyObject* keywords) noexcept {
-  (void)args;
-  (void)keywords;
-  span_->Finish();
+  static char* keyword_names[] = {
+    const_cast<char*>("finish_time"),
+    nullptr
+  };
+  double finish_time = 0;
+  if (!PyArg_ParseTupleAndKeywords(
+        args, keywords, "|d:finish", keyword_names, &finish_time)) {
+    return nullptr;
+  }
+  if (finish_time != 0) {
+    auto time_since_epoch = std::chrono::nanoseconds{static_cast<uint64_t>(1e9*finish_time)};
+    auto system_timestamp = std::chrono::system_clock::time_point{
+        std::chrono::duration_cast<std::chrono::system_clock::duration>(
+            time_since_epoch)};
+    finish_span_options_.finish_steady_timestamp =
+        opentracing::convert_time_point<std::chrono::steady_clock>(
+            system_timestamp);
+  }
+  span_->FinishWithOptions(finish_span_options_);
   Py_RETURN_NONE;
 }
 

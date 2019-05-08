@@ -22,5 +22,6 @@ class SpanBridge {
    PyObject* exit(PyObject* args) noexcept;
  private:
   std::shared_ptr<opentracing::Span> span_;
+  opentracing::FinishSpanOptions finish_span_options_;
 };
 } // namespace python_bridge_tracer

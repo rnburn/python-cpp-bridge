@@ -63,7 +63,8 @@ static PyObject* startActiveSpan(TracerObject* self, PyObject* args, PyObject* k
     const_cast<char*>("tags"),
     const_cast<char*>("start_time"),
     const_cast<char*>("ignore_active_span"),
-    const_cast<char*>("finish_on_close")
+    const_cast<char*>("finish_on_close"),
+    nullptr
   };
   const char* operation_name = nullptr;
   int operation_name_length = 0;
