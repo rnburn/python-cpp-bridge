@@ -67,12 +67,30 @@ SpanContextBridge getSpanContext(PyObject* object) noexcept {
 }
 
 //--------------------------------------------------------------------------------------------------
+// getBaggage
+//--------------------------------------------------------------------------------------------------
+static PyObject* getBaggage(SpanContextObject* self, PyObject* /*ignored*/) noexcept {
+  // TODO: fill in
+  (void)self;
+  Py_RETURN_NONE;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+// SpanContextGetSetList
+//--------------------------------------------------------------------------------------------------
+static PyGetSetDef SpanContextGetSetList[] = {
+    {"baggage", reinterpret_cast<getter>(getBaggage), nullptr,
+     PyDoc_STR("return the context's baggage")},
+    {nullptr}};
+
+//--------------------------------------------------------------------------------------------------
 // SpanContextTypeSlots
 //--------------------------------------------------------------------------------------------------
 static PyType_Slot SpanContextTypeSlots[] = {
     {Py_tp_doc, toVoidPtr("CppBridgeSpanContext")},
     {Py_tp_dealloc, toVoidPtr(deallocSpanContext)},
-    /* {Py_tp_getset, toVoidPtr(TracerGetSetList)}, */
+    {Py_tp_getset, toVoidPtr(SpanContextGetSetList)},
     {0, nullptr}};
 
 //--------------------------------------------------------------------------------------------------
