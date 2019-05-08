@@ -108,7 +108,8 @@ PyObject* SpanBridge::finish(PyObject* args, PyObject* keywords) noexcept {
 //--------------------------------------------------------------------------------------------------
 PyObject* SpanBridge::exit(PyObject* args) noexcept {
   (void)args;
-  span_->Finish();
+  // TODO: error processing
+  span_->FinishWithOptions(finish_span_options_);
   Py_RETURN_NONE;
 }
 }  // namespace python_bridge_tracer
