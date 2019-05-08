@@ -10,14 +10,14 @@ namespace python_bridge_tracer {
 //--------------------------------------------------------------------------------------------------
 // getNumReferences
 //--------------------------------------------------------------------------------------------------
-static bool getNumReferences(PyObject* references, int& num_references) noexcept {
+static bool getNumReferences(PyObject* references,
+                             int& num_references) noexcept {
   if (references == nullptr || references == Py_None) {
     num_references = 0;
     return true;
   }
   if (PyList_Check(references) == 0) {
-    PyErr_Format(PyExc_TypeError,
-                 "references must be a list");
+    PyErr_Format(PyExc_TypeError, "references must be a list");
     return false;
   }
   num_references = PyList_Size(references);
@@ -27,7 +27,8 @@ static bool getNumReferences(PyObject* references, int& num_references) noexcept
 //--------------------------------------------------------------------------------------------------
 // addParentReference
 //--------------------------------------------------------------------------------------------------
-static bool addParentReference(PyObject* parent, 
+static bool addParentReference(
+    PyObject* parent,
     std::vector<std::pair<opentracing::SpanReferenceType, SpanContextBridge>>&
         cpp_references) noexcept {
   if (parent == nullptr) {
@@ -52,16 +53,16 @@ static bool addParentReference(PyObject* parent,
 //--------------------------------------------------------------------------------------------------
 // addActiveSpanReference
 //--------------------------------------------------------------------------------------------------
-static bool addActiveSpanReference(PyObject* scope_manager,
+static bool addActiveSpanReference(
+    PyObject* scope_manager,
     std::vector<std::pair<opentracing::SpanReferenceType, SpanContextBridge>>&
         cpp_references) noexcept {
   auto active_scope = PyObject_GetAttrString(scope_manager, "active");
   if (active_scope == nullptr) {
     return false;
   }
-  auto cleanup_active_scope = finally([active_scope] {
-      Py_DECREF(active_scope);
-  });
+  auto cleanup_active_scope =
+      finally([active_scope] { Py_DECREF(active_scope); });
   if (active_scope == Py_None) {
     return true;
   }
@@ -69,9 +70,7 @@ static bool addActiveSpanReference(PyObject* scope_manager,
   if (active_span == nullptr) {
     return false;
   }
-  auto cleanup_active_span = finally([active_span] {
-      Py_DECREF(active_span);
-  });
+  auto cleanup_active_span = finally([active_span] { Py_DECREF(active_span); });
   if (!isSpan(active_span)) {
     PyErr_Format(
         PyExc_TypeError,
@@ -81,7 +80,7 @@ static bool addActiveSpanReference(PyObject* scope_manager,
   }
   cpp_references.emplace_back(opentracing::SpanReferenceType::ChildOfRef,
                               getSpanContextFromSpan(active_span));
-  return true; 
+  return true;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -124,16 +123,16 @@ static bool getReferenceType(
 //--------------------------------------------------------------------------------------------------
 // addReference
 //--------------------------------------------------------------------------------------------------
-static bool addReference(PyObject* reference, 
+static bool addReference(
+    PyObject* reference,
     std::vector<std::pair<opentracing::SpanReferenceType, SpanContextBridge>>&
         cpp_references) noexcept {
   auto reference_type = PyObject_GetAttrString(reference, "type");
   if (reference_type == nullptr) {
     return false;
   }
-  auto cleanup_reference_type = finally([reference_type] {
-      Py_DECREF(reference_type);
-  });
+  auto cleanup_reference_type =
+      finally([reference_type] { Py_DECREF(reference_type); });
   opentracing::SpanReferenceType cpp_reference_type;
   if (!getReferenceType(reference_type, cpp_reference_type)) {
     return false;
@@ -142,14 +141,12 @@ static bool addReference(PyObject* reference,
   if (span_context == nullptr) {
     return false;
   }
-  auto cleanup_span_context = finally([span_context] {
-      Py_DECREF(span_context);
-  });
+  auto cleanup_span_context =
+      finally([span_context] { Py_DECREF(span_context); });
   if (!isSpanContext(span_context)) {
-    PyErr_Format(
-        PyExc_TypeError,
-        "unexpected type for referenced_context: expected " PYTHON_BRIDGE_TRACER_MODULE
-        "._SpanContext");
+    PyErr_Format(PyExc_TypeError,
+                 "unexpected type for referenced_context: "
+                 "expected " PYTHON_BRIDGE_TRACER_MODULE "._SpanContext");
     return false;
   }
   cpp_references.emplace_back(cpp_reference_type, getSpanContext(span_context));
@@ -160,10 +157,10 @@ static bool addReference(PyObject* reference,
 // addReferences
 //--------------------------------------------------------------------------------------------------
 static bool addReferences(
-    PyObject* references, int num_references, 
+    PyObject* references, int num_references,
     std::vector<std::pair<opentracing::SpanReferenceType, SpanContextBridge>>&
         cpp_references) noexcept {
-  for (int i=0; i<num_references; ++i) {
+  for (int i = 0; i < num_references; ++i) {
     auto reference = PyList_GetItem(references, i);
     if (!addReference(reference, cpp_references)) {
       return false;
@@ -184,8 +181,8 @@ static bool getCppReferences(
   if (!getNumReferences(references, num_references)) {
     return false;
   }
-  cpp_references.reserve(static_cast<size_t>(num_references+2));
-  if(!addParentReference(parent, cpp_references)) {
+  cpp_references.reserve(static_cast<size_t>(num_references + 2));
+  if (!addParentReference(parent, cpp_references)) {
     return false;
   }
   if (!ignore_active_span) {
@@ -194,6 +191,28 @@ static bool getCppReferences(
     }
   }
   return addReferences(references, num_references, cpp_references);
+}
+
+//--------------------------------------------------------------------------------------------------
+// setTags
+//--------------------------------------------------------------------------------------------------
+static bool setTags(SpanBridge& span_bridge, PyObject* tags) noexcept {
+  if (tags == nullptr || tags == Py_None) {
+    return true;
+  }
+  if (PyDict_Check(tags) == 0) {
+    PyErr_Format(PyExc_TypeError, "tags must be a dict");
+    return false;
+  }
+  PyObject* key;
+  PyObject* value;
+  Py_ssize_t position = 0;
+  while (PyDict_Next(tags, &position, &key, &value)) {
+    if (!span_bridge.setTagKeyValue(key, value)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -222,13 +241,18 @@ std::unique_ptr<SpanBridge> TracerBridge::makeSpan(
                                     &reference.second.span_context());
   }
   if (start_time != 0) {
-    auto time_since_epoch = std::chrono::nanoseconds{static_cast<uint64_t>(1e9*start_time)};
+    auto time_since_epoch =
+        std::chrono::nanoseconds{static_cast<uint64_t>(1e9 * start_time)};
     options.start_system_timestamp = std::chrono::system_clock::time_point{
         std::chrono::duration_cast<std::chrono::system_clock::duration>(
             time_since_epoch)};
   }
-  (void)tags;
+
   auto span = tracer_->StartSpanWithOptions(operation_name, options);
-  return std::unique_ptr<SpanBridge>{new SpanBridge{std::move(span)}};
+  std::unique_ptr<SpanBridge> span_bridge{new SpanBridge{std::move(span)}};
+  if (!setTags(*span_bridge, tags)) {
+    return nullptr;
+  }
+  return span_bridge;
 }
-} // namespace python_bridge_tracer
+}  // namespace python_bridge_tracer
