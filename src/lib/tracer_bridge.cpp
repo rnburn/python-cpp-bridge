@@ -142,6 +142,9 @@ static bool addReference(PyObject* reference,
   if (span_context == nullptr) {
     return false;
   }
+  auto cleanup_span_context = finally([span_context] {
+      Py_DECREF(span_context);
+  });
   if (!isSpanContext(span_context)) {
     PyErr_Format(
         PyExc_TypeError,
