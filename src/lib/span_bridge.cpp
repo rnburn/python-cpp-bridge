@@ -35,6 +35,24 @@ SpanBridge::SpanBridge(std::shared_ptr<opentracing::Span> span) noexcept
     : span_{std::move(span)} {}
 
 //--------------------------------------------------------------------------------------------------
+// setOperationName
+//--------------------------------------------------------------------------------------------------
+PyObject* SpanBridge::setOperationName(PyObject* args,
+                                       PyObject* keywords) noexcept {
+  static char* keyword_names[] = {const_cast<char*>("operation_name"), nullptr};
+  const char* operation_name = nullptr;
+  int operation_name_length = 0;
+  if (!PyArg_ParseTupleAndKeywords(args, keywords, "s#:set_operation_name",
+                                   keyword_names, &operation_name,
+                                   &operation_name_length)) {
+    return nullptr;
+  }
+  span_->SetOperationName(opentracing::string_view{
+      operation_name, static_cast<size_t>(operation_name_length)});
+  Py_RETURN_NONE;
+}
+
+//--------------------------------------------------------------------------------------------------
 // setTag
 //--------------------------------------------------------------------------------------------------
 PyObject* SpanBridge::setTag(PyObject* args, PyObject* keywords) noexcept {

@@ -34,11 +34,7 @@ static void deallocSpan(SpanObject* self) noexcept {
 // setOperationName
 //--------------------------------------------------------------------------------------------------
 static PyObject* setOperationName(SpanObject* self, PyObject* args, PyObject* keywords) noexcept {
-  // TODO: fill in
-  (void)self;
-  (void)args;
-  (void)keywords;
-  Py_RETURN_NONE;
+  return self->span_bridge->setOperationName(args, keywords);
 }
 
 

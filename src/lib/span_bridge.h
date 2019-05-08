@@ -15,6 +15,8 @@ class SpanBridge {
 
    std::shared_ptr<const opentracing::Span> span() noexcept { return span_; }
 
+   PyObject* setOperationName(PyObject* args, PyObject* keywords) noexcept;
+
    PyObject* setTag(PyObject* args, PyObject* keywords) noexcept;
 
    PyObject* finish(PyObject* args, PyObject* keywords) noexcept;
