@@ -31,10 +31,77 @@ static void deallocSpan(SpanObject* self) noexcept {
 }
 
 //--------------------------------------------------------------------------------------------------
+// setOperationName
+//--------------------------------------------------------------------------------------------------
+static PyObject* setOperationName(SpanObject* self, PyObject* args, PyObject* keywords) noexcept {
+  // TODO: fill in
+  (void)self;
+  (void)args;
+  (void)keywords;
+  Py_RETURN_NONE;
+}
+
+
+//--------------------------------------------------------------------------------------------------
 // setTag
 //--------------------------------------------------------------------------------------------------
 static PyObject* setTag(SpanObject* self, PyObject* args, PyObject* keywords) noexcept {
   return self->span_bridge->setTag(args, keywords);
+}
+
+//--------------------------------------------------------------------------------------------------
+// logKeyValues
+//--------------------------------------------------------------------------------------------------
+static PyObject* logKeyValues(SpanObject* self, PyObject* args, PyObject* keywords) noexcept {
+  // TODO: fill in
+  (void)self;
+  (void)args;
+  (void)keywords;
+  Py_RETURN_NONE;
+}
+
+//--------------------------------------------------------------------------------------------------
+// setBaggageItem
+//--------------------------------------------------------------------------------------------------
+static PyObject* setBaggageItem(SpanObject* self, PyObject* args, PyObject* keywords) noexcept {
+  // TODO: fill in
+  (void)self;
+  (void)args;
+  (void)keywords;
+  Py_RETURN_NONE;
+}
+
+//--------------------------------------------------------------------------------------------------
+// getBaggageItem
+//--------------------------------------------------------------------------------------------------
+static PyObject* getBaggageItem(SpanObject* self, PyObject* args, PyObject* keywords) noexcept {
+  // TODO: fill in
+  (void)self;
+  (void)args;
+  (void)keywords;
+  Py_RETURN_NONE;
+}
+
+//--------------------------------------------------------------------------------------------------
+// logEvent
+//--------------------------------------------------------------------------------------------------
+static PyObject* logEvent(SpanObject* self, PyObject* args, PyObject* keywords) noexcept {
+  // TODO: fill in
+  (void)self;
+  (void)args;
+  (void)keywords;
+  Py_RETURN_NONE;
+}
+
+//--------------------------------------------------------------------------------------------------
+// log
+//--------------------------------------------------------------------------------------------------
+static PyObject* log(SpanObject* self, PyObject* args, PyObject* keywords) noexcept {
+  // TODO: fill in
+  (void)self;
+  (void)args;
+  (void)keywords;
+  Py_RETURN_NONE;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -79,8 +146,20 @@ static PyObject* getTracer(SpanObject* self, PyObject* /*ignored*/) noexcept {
 // SpanMethods
 //--------------------------------------------------------------------------------------------------
 static PyMethodDef SpanMethods[] = {
+    {"set_operation_name", reinterpret_cast<PyCFunction>(setOperationName),
+     METH_VARARGS | METH_KEYWORDS, PyDoc_STR("set the span's operation name")},
     {"set_tag", reinterpret_cast<PyCFunction>(setTag),
-     METH_VARARGS | METH_KEYWORDS, PyDoc_STR("Set a tag")},
+     METH_VARARGS | METH_KEYWORDS, PyDoc_STR("set a tag")},
+    {"log_kv", reinterpret_cast<PyCFunction>(logKeyValues),
+     METH_VARARGS | METH_KEYWORDS, PyDoc_STR("log key-values")},
+    {"set_baggage_item", reinterpret_cast<PyCFunction>(setBaggageItem),
+     METH_VARARGS | METH_KEYWORDS, PyDoc_STR("stores a baggage item")},
+    {"get_baggage_item", reinterpret_cast<PyCFunction>(getBaggageItem),
+     METH_VARARGS | METH_KEYWORDS, PyDoc_STR("retrieves a baggage item")},
+    {"log_event", reinterpret_cast<PyCFunction>(logEvent),
+     METH_VARARGS | METH_KEYWORDS, PyDoc_STR("log an event")},
+    {"log", reinterpret_cast<PyCFunction>(log),
+     METH_VARARGS | METH_KEYWORDS, PyDoc_STR("log key-values")},
     {"finish", reinterpret_cast<PyCFunction>(finish),
      METH_VARARGS | METH_KEYWORDS, PyDoc_STR("finish the span")},
     {"__enter__", reinterpret_cast<PyCFunction>(enterContext), METH_NOARGS, nullptr},
