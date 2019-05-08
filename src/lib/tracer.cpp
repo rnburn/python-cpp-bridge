@@ -144,6 +144,28 @@ static PyObject* startSpan(TracerObject* self, PyObject* args, PyObject* keyword
 }
 
 //--------------------------------------------------------------------------------------------------
+// inject
+//--------------------------------------------------------------------------------------------------
+static PyObject* inject(TracerObject* self, PyObject* args, PyObject* keywords) noexcept {
+  // TODO: fill in
+  (void)self;
+  (void)args;
+  (void)keywords;
+  Py_RETURN_NONE;
+}
+
+//--------------------------------------------------------------------------------------------------
+// extract
+//--------------------------------------------------------------------------------------------------
+static PyObject* extract(TracerObject* self, PyObject* args, PyObject* keywords) noexcept {
+  // TODO: fill in
+  (void)self;
+  (void)args;
+  (void)keywords;
+  Py_RETURN_NONE;
+}
+
+//--------------------------------------------------------------------------------------------------
 // close
 //--------------------------------------------------------------------------------------------------
 static PyObject* close(TracerObject* self) noexcept {
@@ -184,6 +206,10 @@ static PyMethodDef TracerMethods[] = {
      METH_VARARGS | METH_KEYWORDS, PyDoc_STR("start a span")},
     {"start_active_span", reinterpret_cast<PyCFunction>(startActiveSpan),
      METH_VARARGS | METH_KEYWORDS, PyDoc_STR("start and activate a span")},
+    {"inject", reinterpret_cast<PyCFunction>(inject),
+     METH_VARARGS | METH_KEYWORDS, PyDoc_STR("injects a span's context into a carrier")},
+    {"extract", reinterpret_cast<PyCFunction>(extract),
+     METH_VARARGS | METH_KEYWORDS, PyDoc_STR("extracts a span's context from a carrier")},
     {"close", reinterpret_cast<PyCFunction>(close), METH_VARARGS,
      PyDoc_STR("close tracer")},
     {nullptr, nullptr}};
