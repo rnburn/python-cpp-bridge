@@ -17,6 +17,10 @@ class SpanBridge {
 
    PyObject* setOperationName(PyObject* args, PyObject* keywords) noexcept;
 
+   bool setTagKeyValue(opentracing::string_view key, PyObject* value) noexcept;
+
+   bool setTagKeyValue(PyObject* key, PyObject* value) noexcept;
+
    PyObject* setTag(PyObject* args, PyObject* keywords) noexcept;
 
    PyObject* finish(PyObject* args, PyObject* keywords) noexcept;
