@@ -207,7 +207,7 @@ static bool setTags(SpanBridge& span_bridge, PyObject* tags) noexcept {
   PyObject* key;
   PyObject* value;
   Py_ssize_t position = 0;
-  while (PyDict_Next(tags, &position, &key, &value)) {
+  while (PyDict_Next(tags, &position, &key, &value) == 1) {
     if (!span_bridge.setTagKeyValue(key, value)) {
       return false;
     }

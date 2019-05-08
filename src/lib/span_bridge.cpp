@@ -6,7 +6,7 @@ namespace python_bridge_tracer {
 //--------------------------------------------------------------------------------------------------
 // setStringTag
 //--------------------------------------------------------------------------------------------------
-static bool setStringTag2(opentracing::Span& span, opentracing::string_view key,
+static bool SetStringTag(opentracing::Span& span, opentracing::string_view key,
     PyObject* value) noexcept {
   auto utf8 = PyUnicode_AsUTF8String(value);
   if (utf8 == nullptr) {
@@ -58,7 +58,7 @@ PyObject* SpanBridge::setOperationName(PyObject* args,
 bool SpanBridge::setTagKeyValue(opentracing::string_view key, PyObject* value) noexcept {
   opentracing::Value cpp_value;
   if (PyUnicode_Check(value) == 1) {
-    return setStringTag2(*span_, key, value);
+    return SetStringTag(*span_, key, value);
   } else if (PyBool_Check(value) == 1) {
     cpp_value = static_cast<bool>(PyObject_IsTrue(value));
   } else if (PyLong_Check(value) == 1) {
