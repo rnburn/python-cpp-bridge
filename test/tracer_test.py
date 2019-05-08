@@ -113,6 +113,26 @@ class TestTracer(unittest.TestCase):
         self.assertEqual(len(spans), 1)
         self.assertEqual(spans[0]['operation_name'], 'xyz')
 
+    def test_set_tag1(self):
+        tracer, traces_path = make_mock_tracer()
+        span = tracer.start_span('abc')
+        span.set_tag('a', 1)
+        span.finish()
+        tracer.close()
+        spans = read_spans(traces_path)
+        self.assertEqual(len(spans), 1)
+        self.assertEqual(spans[0]['tags']['a'], 1)
+
+    def test_set_tag2(self):
+        tracer, traces_path = make_mock_tracer()
+        span = tracer.start_span('abc', tags={'a':1})
+        span.finish()
+        tracer.close()
+        spans = read_spans(traces_path)
+        self.assertEqual(len(spans), 1)
+        self.assertEqual(spans[0]['tags']['a'], 1)
+
+
     def test_get_tracer_from_span(self):
         tracer, traces_path = make_mock_tracer()
         span1 = tracer.start_span('abc')
